@@ -31,25 +31,19 @@ def driver(request):
 	driver.quit()
 
 
-@allure.step('метод создает пользователя c данными User_1')
-@pytest.fixture
-def data_user():
-	return TU.User_1
-
-
 @allure.step('метод создает пользователя c заданными данными и удаляет его после теста')
 @pytest.fixture
-def create_and_delete_user_with_data(request):
-    user_data = request.getfixturevalue("data_user")
-    usermethods = UserMethods()
-    # создание пользователя
-    created_data = usermethods.create_user(
+def create_and_delete_user_with_data():
+	user_data = TU.User_1
+	usermethods = UserMethods()
+	# создание пользователя
+	created_data = usermethods.create_user(
         email=user_data["email"],
         password=user_data["password"],
         name=user_data["name"]
     )
-    yield created_data
-    # удаление пользователя после завершения теста
-    token = created_data["response"].json().get("accessToken")
-    usermethods.delete_user(token)
+	yield created_data
+	# удаление пользователя после завершения теста
+	token = created_data["response"].json().get("accessToken")
+	usermethods.delete_user(token)
 
