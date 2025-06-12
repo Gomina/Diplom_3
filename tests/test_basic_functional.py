@@ -1,11 +1,7 @@
 import allure
-import pytest
 
-from data import TD
-from locators.home_page_locators import TLHP
 from pages.account_page import AccountPage
 from pages.home_page import HomePage
-from urls import TestUrl
 
 
 class TestBasicFunctions:
@@ -16,13 +12,10 @@ class TestBasicFunctions:
         page = HomePage(driver)
         # закрыть модальное окно
         page.close_modal_if_present()
-        # перейти на страницу "Вход"
-        page.clic_on_element(TLHP.LOCATOR_PERSONAL_ACCOUNT)
-        # кликнуть "Конструктор"
-        page.clic_on_element(TLHP.LOCATOR_BUTTON_CONSTRUCTOR)
-        # проверить, что открылась страница "Конструктор"
-        current_url = driver.current_url
-        expected_url = TestUrl.URL_PAGE_CONSTRUCTOR
+        # открыть страницу "Конструктор" и запомнить её URL
+        current_url = page.transition_to_constructor()
+        # URL, который должен быть у страницы "Конструктор"
+        expected_url = page.expected_url_constructor()
         assert current_url == expected_url
 
 
@@ -31,11 +24,10 @@ class TestBasicFunctions:
         page = HomePage(driver)
         # закрыть модальное окно
         page.close_modal_if_present()
-        # перейти на страницу "Лента заказов"
-        page.clic_on_element(TLHP.LOCATOR_BUTTON_ORDER_FEED)
-        # проверить, что открылась страница "Лента заказов"
-        current_url = driver.current_url
-        expected_url = TestUrl.URL_PAGE_ORDER_FEED
+        # открыть страницу "Лента заказов" и запомнить её URL
+        current_url = page.transition_to_order_feed()
+        # URL, который должен быть у страницы "Лента заказов"
+        expected_url = page.expected_url_order_feed()
         assert current_url == expected_url
 
 
@@ -44,9 +36,9 @@ class TestBasicFunctions:
         page = HomePage(driver)
         # закрыть модальное окно
         page.close_modal_if_present()
-        # проскролить и кликнуть на "Соус Spicy-X"
-        page.scroll_to_element(TLHP.LOCATOR_SAUCE_SPICY_X_BUTTON)
-        assert page.is_element_present(TLHP.LOCATOR_CLOSE_SAUCE_SPICY_X_WINDOW)
+        # открыть окно с деталями ингредиента "Соус Spicy-X"
+        page.open_window_ingredient_detail_SPICY_X()
+        assert page.window_ingredient_detail_SPICY_X_present()
 
 
     @allure.title('Проверка, что всплывающее окно ингредиента закрывается кликом по крестику')
@@ -54,11 +46,11 @@ class TestBasicFunctions:
         page = HomePage(driver)
         # закрыть модальное окно
         page.close_modal_if_present()
-        # проскролить и кликнуть на "Соус Spicy-X"
-        page.scroll_to_element(TLHP.LOCATOR_SAUCE_SPICY_X_BUTTON)
-        # кликнуть на крестик модального окна
-        page.clic_on_element(TLHP.LOCATOR_CLOSE_SAUCE_SPICY_X_WINDOW)
-        assert  page.is_element_not_visible(TLHP.LOCATOR_SAUCE_SPICY_X_WINDOW)
+        # открыть окно с деталями ингредиента "Соус Spicy-X"
+        page.open_window_ingredient_detail_SPICY_X()
+        # закрыть модальное окно
+        page.close_window_ingredient_detail_SPICY_X()
+        assert  page.window_ingredient_detail_SPICY_X_not_visible()
 
 
     @allure.title('Проверка, что при добалении ингредиента в бургер, меняется стоимость бургера')
@@ -66,10 +58,9 @@ class TestBasicFunctions:
         page = HomePage(driver)
         # закрыть модальное окно
         page.close_modal_if_present()
-        # положить "Краторная булка N-200i" в заказ
-        page.drag_and_drop_element(TLHP.LOCATOR_KRATORNAYA_BULKA, TLHP.LOCATOR_OF_SELECTED)
-        assert page.get_text_from_element(TLHP.LOCATOR_PRICE) == TD.TEXT_PRICE_KRATORNAYA_BULKA_IN_ORDER
-
+        # положить "Краторная булка N-200i" в заказ и оценить стоимость
+        real_value = page.throw_bun_in_order_price()
+        assert real_value == page.cost_two_Kratornaya_bun_N_200i()
 
 
     @allure.title('Проверка, что залогиненный пользователь может оформить заказ')
@@ -78,7 +69,7 @@ class TestBasicFunctions:
         # войти в личный кабинет
         page.open_user_page(create_and_delete_user_with_data)
         # перейти в "Конструктор"
-        page.clic_on_element(TLHP.LOCATOR_BUTTON_CONSTRUCTOR)
+        page.transition_to_constructor()
         # нажать на кнопку "Оформить заказ"
-        page.clic_on_element(TLHP.LOCATOR_BUTTON_PLACE_AN_ORDER)
-        assert page.is_element_present(TLHP.LOCATOR_MODAL_WINDOW_ORDER)
+        page.open_order_window()
+        assert page.order_window_open()
