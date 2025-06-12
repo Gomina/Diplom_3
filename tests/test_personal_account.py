@@ -14,10 +14,10 @@ class TestPasswordRecovery:
     @allure.title('Проверка перехода на страницу восстановления пароля по кнопке «Восстановить пароль»')
     def test_go_to_page_recover_password(self, driver):
         page = AccountPage(driver)
-        page.open_page_restore_password()
-        # проверить, что открылась страница "Восстановление пароля"
-        current_url = driver.current_url
-        expected_url = TestUrl.URL_PAGE_RECOVER_PASSWORD
+        # открыть страницу "Восстановление пароля" и вернуть актуальный URL
+        current_url = page.open_page_restore_password()
+        # ожидаемый URL страницы "Восстановление пароля"
+        expected_url = page.url_page_recover_password()
         assert current_url == expected_url
 
 
@@ -25,10 +25,9 @@ class TestPasswordRecovery:
     def test_password_recovery(self, driver):
         page = AccountPage(driver)
         test_email = TU.User_1["email"]
-        # перейти на страницу с полем "Введите код из письма"
-        page.recover_password_new_password(email=test_email)
-        real_text = page.get_text_from_element(TLAP.LOCATOR_FIELD_CODE_FROM_LETTER)
-        expect_text = TD.FIELD_CODE_FROM_LETTER
+        # перейти на страницу с полем "Введите код из письма". Вернуть плейсхолдер поля "Введите код из письма"
+        real_text = page.recover_password_new_password(email=test_email)
+        expect_text = page.placeholder_field_enter_code_from_letter()
         assert real_text == expect_text
 
 
@@ -36,14 +35,11 @@ class TestPasswordRecovery:
     def test_select_frame_field_password(self, driver):
         page = AccountPage(driver)
         test_email = TU.User_1["email"]
-        # перейти на страницу с полем "Введите код из письма"
+        # перейти на страницу с полем "Введите код из письма".
         page.recover_password_new_password(email=test_email)
-        # нажать на кнопку "глаз"
-        page.clic_on_element(TLAP.LOCATOR_SHOW_HIDE_PASSWORD)
-        # найти поле
-        field_container = page.find_element_with_wait(TLAP.LOCATOR_INPUT_FIELD_BORDER)
-        # проверить статус
-        assert "input_status_active" in field_container.get_attribute("class")
+        # проверяем активность поля
+        active_field = page.field_reset_password_is_active()
+        assert  active_field
 
 
 class TestPersonalAccount:
@@ -53,11 +49,10 @@ class TestPersonalAccount:
         page = AccountPage(driver)
         # закрыть модальное окно
         page.close_modal_if_present()
-        # кликнуть кнопку «Личный кабинет»
-        page.clic_on_element(TLHP.LOCATOR_PERSONAL_ACCOUNT)
-        # проверить, что открылась страница "Вход"
-        current_url = driver.current_url
-        expected_url = TestUrl.URL_PAGE_LOGIN
+        # кликнуть кнопку "Личный кабинет", вернуть актуальный URL
+        current_url = page.open_page_login()
+        # ожидаемый URL
+        expected_url = page.URL_page_login()
         assert current_url == expected_url
 
 
@@ -66,11 +61,10 @@ class TestPersonalAccount:
         page = AccountPage(driver)
         # загрузить страницу "Профиль"
         page.open_user_page(create_and_delete_user_with_data)
-        # кликнуть «История заказов»
-        page.clic_on_element(TLAP.LOCATOR_HISTORY_ORDER)
         # проверить, что открылась страница "История заказов"
-        current_url = driver.current_url
-        expected_url = TestUrl.URL_HISTORY_ORDER
+        current_url = page.open_order_history_page()
+        # ожидаемый URL
+        expected_url = page.URL_rder_history_page()
         assert current_url == expected_url
 
 
@@ -79,11 +73,8 @@ class TestPersonalAccount:
         page = AccountPage(driver)
         # загрузить страницу "Профиль"
         page.open_user_page(create_and_delete_user_with_data)
-        # кликнуть кнопку «Выход»
-        page.clic_on_element(TLAP.LOCATOR_BUTTON_LOGOUT)
-        # дождаться чтобы URL "Вход" прогрузился
-        page.loading_page_with_url(TestUrl.URL_PAGE_LOGIN)
-        # проверить, что открылась страница "История заказов"
-        current_url = driver.current_url
-        expected_url = TestUrl.URL_PAGE_LOGIN
+        # выити из личного кабинета
+        current_url = page.logout()
+        # ожидаемый URL
+        expected_url = page.URL_page_login()
         assert current_url == expected_url

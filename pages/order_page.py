@@ -1,11 +1,10 @@
 import allure
-import time
 
-from selenium.common import TimeoutException
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
+from locators.account_page_locators import TLAP
 from locators.home_page_locators import TLHP
+from locators.order_page_locators import TLOP
 from pages.account_page import AccountPage
 
 
@@ -35,13 +34,14 @@ class OrderPage (AccountPage):
         order_number = self.wait_for_updated_order_number()
         # Закрываем окно заказа
         self.clic_on_element(TLHP.LOCATOR_CLOSE_ORDER_WINDOW)
+        self.close_modal_if_present()
         return f"{int(order_number):07d}"
 
 
     @allure.step('Ожидание реального номера заказа в окне заказа')
     def wait_for_updated_order_number(self):
         # ожидать появление элемента и что он содержит валидный номер заказа
-        element = WebDriverWait(self.driver, 30).until(
+        element = WebDriverWait(self.driver, 60).until(
             lambda d: (
                               (el := d.find_element(*TLHP.LOCATOR_GET_ORDER_NUMBER)) and
                               el.is_displayed() and
@@ -51,8 +51,46 @@ class OrderPage (AccountPage):
         )
         # проверить что текст изменился (дополнительная страховка)
         initial_text = element.text
-        WebDriverWait(self.driver, 30).until(
+        WebDriverWait(self.driver, 60).until(
             lambda _: element.text != initial_text
         )
         return element.text.strip()
 
+
+    @allure.step('Открыть окно детали заказа в "Ленте заказа"')
+    def open_window_order_details(self):
+        # кликнуть первый заказ в левой колонке
+        self.clic_on_element(TLOP.LOCATOR_ORDER_LEFT_COLUMN)
+        # дождаться, чтобы окно стало видимым
+        self.wait_for_element_visible(TLOP.LOCATOR_MODAL_WINDOW_ORDER)
+
+
+    @allure.step('Окно детали заказа в "Ленте заказа" открыто')
+    def window_order_details_open(self):
+        return self.is_element_present(TLOP.LOCATOR_MODAL_WINDOW_ORDER)
+
+
+    @allure.step('Запомнить номер заказа из "Истории заказов"')
+    def order_number_from_order_history(self):
+        return self.get_text_from_element(TLAP.LOCATOR_ORDER_NUMBER)
+
+
+    @allure.step('Найти номер заказа клиента из "Истории заказов" в "Ленте заказов"')
+    def user_order_is_present(self,order_number):
+        # создать локатор для поиска заказа с номером order_number
+        order_feed_locator = (TLOP.LOCATOR_ORDER_LEFT_COLUMN[0], TLOP.LOCATOR_ORDER_LEFT_COLUMN[1].format(order_number))
+        # найти заказ с номером order_number
+        self.find_element_with_wait(order_feed_locator)
+        return self.is_element_present(order_feed_locator)
+
+    @allure.step('Метод возвращает число заказов из графы "Выполнено за все время". Страница "Лента заказов"')
+    def total_orders_all_time(self):
+        return self.get_text_from_element(TLOP.LOCATOR_COMPLETED_FOR_ALL_TIME)
+
+    @allure.step('Метод возвращает число заказов из графы "Выполнено за сегодня". Страница "Лента заказов"')
+    def total_orders_today(self):
+        return self.get_text_from_element(TLOP.LOCATOR_COMPLETED_FOR_TODAY)
+
+    @allure.step('Найти номер заказа клиента в "В работе" в "Ленте заказов"')
+    def user_order_in_progress(self):
+        return self.wait_for_numeric_text_in_element(TLOP.LOCATOR_ORDER_NUMBER)

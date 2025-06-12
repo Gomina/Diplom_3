@@ -5,7 +5,9 @@ from seletools.actions import drag_and_drop
 from selenium.webdriver.support import expected_conditions as EC, expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
 
+from data import TD
 from locators.home_page_locators import TLHP
+from urls import TestUrl
 
 
 class HomePage:
@@ -130,3 +132,74 @@ class HomePage:
             return True
         except NoSuchElementException:
             return False
+
+
+    @allure.step('метод проверяет, переход на вкладку конструктор и возвращает текущий URL')
+    def transition_to_constructor(self):
+        # перейти на страницу "Вход"
+        self.clic_on_element(TLHP.LOCATOR_PERSONAL_ACCOUNT)
+        # кликнуть "Конструктор"
+        self.clic_on_element(TLHP.LOCATOR_BUTTON_CONSTRUCTOR)
+        return self.driver.current_url
+
+
+    @allure.step('метод возвращает ожидаемый URL "Конструктор"')
+    def expected_url_constructor(self):
+        expected_url = TestUrl.URL_PAGE_CONSTRUCTOR
+        return expected_url
+
+
+    @allure.step('метод проверяет, переход на вкладку «Лента заказов» и возвращает текущий URL')
+    def transition_to_order_feed(self):
+        # кликнуть  «Лента заказов»
+        self.clic_on_element(TLHP.LOCATOR_BUTTON_ORDER_FEED)
+        return self.driver.current_url
+
+
+    @allure.step('метод возвращает ожидаемый URL «Лента заказов»')
+    def expected_url_order_feed(self):
+        return TestUrl.URL_PAGE_ORDER_FEED
+
+
+    @allure.step('метод открывает окно с деталями ингредиента SPICY_X')
+    def open_window_ingredient_detail_SPICY_X(self):
+        # проскролить и кликнуть на "Соус Spicy-X"
+        self.scroll_to_element(TLHP.LOCATOR_SAUCE_SPICY_X_BUTTON)
+
+
+    @allure.step('метод проверяет, что окно с деталями ингредиента SPICY_X открыто')
+    def window_ingredient_detail_SPICY_X_present(self):
+        return self.is_element_present(TLHP.LOCATOR_CLOSE_SAUCE_SPICY_X_WINDOW)
+
+
+    @allure.step('метод закрывает окно с деталями ингредиента SPICY_X открыто')
+    def close_window_ingredient_detail_SPICY_X(self):
+        # кликнуть на крестик модального окна
+        self.clic_on_element(TLHP.LOCATOR_CLOSE_SAUCE_SPICY_X_WINDOW)
+
+
+    @allure.step('метод проверяет, что окно с деталями ингредиента SPICY_X закрыто')
+    def window_ingredient_detail_SPICY_X_not_visible(self):
+        return self.is_element_not_visible(TLHP.LOCATOR_SAUCE_SPICY_X_WINDOW)
+
+
+    @allure.step('метод кладет ингредиент "Краторная булка N-200i" в заказ и возвращает стоимость заказа')
+    def throw_bun_in_order_price(self):
+        # положить "Краторная булка N-200i" в заказ
+        self.drag_and_drop_element(TLHP.LOCATOR_KRATORNAYA_BULKA, TLHP.LOCATOR_OF_SELECTED)
+        return self.get_text_from_element(TLHP.LOCATOR_PRICE)
+
+
+    @allure.step('метод возвращает ожидаемую стоимость двух "Краторная булка N-200i"')
+    def cost_two_Kratornaya_bun_N_200i(self):
+        return TD.TEXT_PRICE_KRATORNAYA_BULKA_IN_ORDER
+
+
+    @allure.step('метод открывает окно заказа')
+    def open_order_window(self):
+        self.clic_on_element(TLHP.LOCATOR_BUTTON_PLACE_AN_ORDER)
+
+
+    @allure.step('метод проверяет, что окно заказа открылось')
+    def order_window_open(self):
+        return self.is_element_present(TLHP.LOCATOR_MODAL_WINDOW_ORDER)

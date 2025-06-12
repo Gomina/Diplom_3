@@ -1,9 +1,5 @@
 import allure
-import pytest
 
-from locators.account_page_locators import TLAP
-from locators.home_page_locators import TLHP
-from locators.order_page_locators import TLOP
 from pages.order_page import OrderPage
 
 
@@ -15,11 +11,9 @@ class TestOrderFeed:
         page = OrderPage(driver)
         # открыть "Лента Заказов"
         page.open_order_feed()
-        # кликнуть первый заказ в левой колонке
-        page.clic_on_element(TLOP.LOCATOR_ORDER_LEFT_COLUMN)
-        # дождаться, чтобы окно стало видимым
-        page.wait_for_element_visible(TLOP.LOCATOR_MODAL_WINDOW_ORDER)
-        assert page.is_element_present(TLOP.LOCATOR_MODAL_WINDOW_ORDER)
+        # открыть окно с деталями заказа
+        page.open_window_order_details()
+        assert page.window_order_details_open()
 
 
     @allure.title('Проверить, что заказы пользователя из раздела «История заказов» отображаются на странице «Лента заказов»')
@@ -28,18 +22,14 @@ class TestOrderFeed:
         # залогиниться, создать заказ, закрыть окно заказа
         page.make_an_order(create_and_delete_user_with_data)
         # перейти в личный кабинет
-        page.clic_on_element(TLHP.LOCATOR_PERSONAL_ACCOUNT)
+        page.open_page_login()
         # перейти в "Историю заказов"
-        page.clic_on_element(TLAP.LOCATOR_HISTORY_ORDER)
+        page.open_order_history_page()
         # запомнить номер заказа из "Истории заказов"
-        order_number = page.get_text_from_element(TLAP.LOCATOR_ORDER_NUMBER)
+        order_number = page.order_number_from_order_history()
         # перейти в "Ленту заказов"
-        page.clic_on_element(TLHP.LOCATOR_BUTTON_ORDER_FEED)
-        # создать локатор для поиска заказа с номером order_number
-        order_feed_locator = (TLOP.LOCATOR_ORDER_LEFT_COLUMN[0], TLOP.LOCATOR_ORDER_LEFT_COLUMN[1].format(order_number))
-        # найти заказ с номером order_number
-        page.find_element_with_wait(order_feed_locator)
-        assert page.is_element_present(order_feed_locator)
+        page.transition_to_order_feed()
+        assert page.user_order_is_present(order_number)
 
 
     @allure.title('Проверить, что при создании нового заказа счётчик Выполнено за всё время увеличивается')
@@ -48,15 +38,15 @@ class TestOrderFeed:
         # закрыть модельное окно
         page.close_modal_if_present()
         # зайти в "Лента заказов"
-        page.clic_on_element(TLHP.LOCATOR_BUTTON_ORDER_FEED)
+        page.transition_to_order_feed()
         # запомнить сколько было заказов за все время
-        was_total_orders_all_time = page.get_text_from_element(TLOP.LOCATOR_COMPLETED_FOR_ALL_TIME)
+        was_total_orders_all_time = page.total_orders_all_time()
         # залогиниться, сделать новый заказ
         page.make_an_order(create_and_delete_user_with_data)
         # зайти в "Лента заказов"
-        page.clic_on_element(TLHP.LOCATOR_BUTTON_ORDER_FEED)
+        page.transition_to_order_feed()
         # запомнить актуальное число заказов за все время
-        became_total_orders_all_time = page.get_text_from_element(TLOP.LOCATOR_COMPLETED_FOR_ALL_TIME)
+        became_total_orders_all_time = page.total_orders_all_time()
         # проверить, что число заказов за все время увеличилось
         assert was_total_orders_all_time < became_total_orders_all_time
 
@@ -67,27 +57,27 @@ class TestOrderFeed:
         # закрыть модельное окно
         page.close_modal_if_present()
         # зайти в "Лента заказов"
-        page.clic_on_element(TLHP.LOCATOR_BUTTON_ORDER_FEED)
+        page.transition_to_order_feed()
         # запомнить сколько было заказов за сегодня
-        was_total_orders_today = page.get_text_from_element(TLOP.LOCATOR_COMPLETED_FOR_TODAY)
+        was_total_orders_today = page.total_orders_today()
         # залогиниться, сделать новый заказ
         page.make_an_order(create_and_delete_user_with_data)
         # зайти в "Лента заказов"
-        page.clic_on_element(TLHP.LOCATOR_BUTTON_ORDER_FEED)
+        page.transition_to_order_feed()
         # запомнить актуальное число заказов за сегодня
-        became_total_orders_today = page.get_text_from_element(TLOP.LOCATOR_COMPLETED_FOR_TODAY)
+        became_total_orders_today = page.total_orders_today()
         # проверить, что число заказов за все время увеличилось
         assert was_total_orders_today < became_total_orders_today
 
 
 
-    @allure.title('Проверить, что после оформления заказа его номер появляется в разделе В работе')
+    @allure.title('Проверить, что после оформления заказа его номер появляется в разделе "В работе"')
     def test_number_created_order_is_in_progress(self, driver, create_and_delete_user_with_data):
         page = OrderPage(driver)
         # создать новый заказ
         user_order_number = page.make_an_order(create_and_delete_user_with_data)
         # перейти в "Лента заказов"
-        page.clic_on_element(TLHP.LOCATOR_BUTTON_ORDER_FEED)
+        page.transition_to_order_feed()
         # ждать появления нашего заказа в списке
-        order_number_progress = page.wait_for_numeric_text_in_element(TLOP.LOCATOR_ORDER_NUMBER)
+        order_number_progress = page.user_order_in_progress()
         assert user_order_number == order_number_progress
