@@ -1,7 +1,7 @@
 import pytest
 import allure
 
-from data import TD
+from data import TD, TU
 from locators.account_page_locators import TLAP
 from locators.home_page_locators import TLHP
 from pages.account_page import AccountPage
@@ -24,8 +24,9 @@ class TestPasswordRecovery:
     @allure.title('Проверка ввода почты и клик по кнопке «Восстановить»')
     def test_password_recovery(self, driver):
         page = AccountPage(driver)
+        test_email = TU.User_1["email"]
         # перейти на страницу с полем "Введите код из письма"
-        page.recover_password_new_password()
+        page.recover_password_new_password(email=test_email)
         real_text = page.get_text_from_element(TLAP.LOCATOR_FIELD_CODE_FROM_LETTER)
         expect_text = TD.FIELD_CODE_FROM_LETTER
         assert real_text == expect_text
@@ -34,8 +35,9 @@ class TestPasswordRecovery:
     @allure.title('Проверка активации поля "Пароль", при нажатии на кнопку показать/скрыть пароль')
     def test_select_frame_field_password(self, driver):
         page = AccountPage(driver)
+        test_email = TU.User_1["email"]
         # перейти на страницу с полем "Введите код из письма"
-        page.recover_password_new_password()
+        page.recover_password_new_password(email=test_email)
         # нажать на кнопку "глаз"
         page.clic_on_element(TLAP.LOCATOR_SHOW_HIDE_PASSWORD)
         # найти поле
