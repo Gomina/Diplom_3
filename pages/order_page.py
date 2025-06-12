@@ -40,17 +40,19 @@ class OrderPage (AccountPage):
 
     @allure.step('Ожидание реального номера заказа в окне заказа')
     def wait_for_updated_order_number(self):
-        # найти элемент, который содержит возможный номер заказа
-        element = WebDriverWait(self.driver, 20).until(
-            EC.presence_of_element_located(TLHP.LOCATOR_GET_ORDER_NUMBER)
+        # ожидать появление элемента и что он содержит валидный номер заказа
+        element = WebDriverWait(self.driver, 30).until(
+            lambda d: (
+                              (el := d.find_element(*TLHP.LOCATOR_GET_ORDER_NUMBER)) and
+                              el.is_displayed() and
+                              el.text.strip().isdigit() and
+                              int(el.text.strip()) > 0
+                      ) and el
         )
-        # начать циклический опрос элемента, пока не появится реальный номер
-        initial_value = element.text
-        start_time = time.time()
-        while element.text == initial_value or not element.text.isdigit():
-            time.sleep(3)
-            if time.time() - start_time > 15:
-                raise TimeoutException
-
-        # вернуть номер заказа
+        # проверить что текст изменился (дополнительная страховка)
+        initial_text = element.text
+        WebDriverWait(self.driver, 30).until(
+            lambda _: element.text != initial_text
+        )
         return element.text.strip()
+

@@ -36,7 +36,7 @@ class TestOrderFeed:
         # перейти в "Ленту заказов"
         page.clic_on_element(TLHP.LOCATOR_BUTTON_ORDER_FEED)
         # создать локатор для поиска заказа с номером order_number
-        order_feed_locator = (TLOP.LOCATOR_ORDER_USER[0], TLOP.LOCATOR_ORDER_USER[1].format(order_number))
+        order_feed_locator = (TLOP.LOCATOR_ORDER_LEFT_COLUMN[0], TLOP.LOCATOR_ORDER_LEFT_COLUMN[1].format(order_number))
         # найти заказ с номером order_number
         page.find_element_with_wait(order_feed_locator)
         assert page.is_element_present(order_feed_locator)
