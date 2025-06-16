@@ -25,6 +25,7 @@ class OrderPage (AccountPage):
         # Открываем страницу пользователя
         self.open_user_page(create_and_delete_user_with_data)
         # Переходим в Конструктор
+        self.close_modal_if_present()
         self.clic_on_element(TLHP.LOCATOR_BUTTON_CONSTRUCTOR)
         # Добавляем ингредиент в заказ
         self.drag_and_drop_element(TLHP.LOCATOR_KRATORNAYA_BULKA, TLHP.LOCATOR_OF_SELECTED)
@@ -36,25 +37,6 @@ class OrderPage (AccountPage):
         self.clic_on_element(TLHP.LOCATOR_CLOSE_ORDER_WINDOW)
         self.close_modal_if_present()
         return f"{int(order_number):07d}"
-
-
-    @allure.step('Ожидание реального номера заказа в окне заказа')
-    def wait_for_updated_order_number(self):
-        # ожидать появление элемента и что он содержит валидный номер заказа
-        element = WebDriverWait(self.driver, 60).until(
-            lambda d: (
-                              (el := d.find_element(*TLHP.LOCATOR_GET_ORDER_NUMBER)) and
-                              el.is_displayed() and
-                              el.text.strip().isdigit() and
-                              int(el.text.strip()) > 0
-                      ) and el
-        )
-        # проверить что текст изменился (дополнительная страховка)
-        initial_text = element.text
-        WebDriverWait(self.driver, 60).until(
-            lambda _: element.text != initial_text
-        )
-        return element.text.strip()
 
 
     @allure.step('Открыть окно детали заказа в "Ленте заказа"')

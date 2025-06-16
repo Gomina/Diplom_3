@@ -70,7 +70,6 @@ class TestOrderFeed:
         assert was_total_orders_today < became_total_orders_today
 
 
-
     @allure.title('Проверить, что после оформления заказа его номер появляется в разделе "В работе"')
     def test_number_created_order_is_in_progress(self, driver, create_and_delete_user_with_data):
         page = OrderPage(driver)

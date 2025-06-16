@@ -203,3 +203,22 @@ class HomePage:
     @allure.step('метод проверяет, что окно заказа открылось')
     def order_window_open(self):
         return self.is_element_present(TLHP.LOCATOR_MODAL_WINDOW_ORDER)
+
+
+    @allure.step('Ожидание реального номера заказа в окне заказа')
+    def wait_for_updated_order_number(self):
+        # ожидать появление элемента и что он содержит валидный номер заказа
+        element = WebDriverWait(self.driver, 60).until(
+            lambda d: (
+                              (el := d.find_element(*TLHP.LOCATOR_GET_ORDER_NUMBER)) and
+                              el.is_displayed() and
+                              el.text.strip().isdigit() and
+                              int(el.text.strip()) > 0
+                      ) and el
+        )
+        # проверить что текст изменился (дополнительная страховка)
+        initial_text = element.text
+        WebDriverWait(self.driver, 60).until(
+            lambda _: element.text != initial_text
+        )
+        return element.text.strip()
